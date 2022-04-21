@@ -18,7 +18,7 @@ class MMoE(Layer):
     """
 
     def __init__(self,
-                 units,
+                 units,  #隐层单元数（expert网络的输出结果大小）
                  num_experts,
                  num_tasks,
                  use_expert_bias=True,
@@ -38,7 +38,7 @@ class MMoE(Layer):
                  expert_kernel_constraint=None,
                  gate_kernel_constraint=None,
                  activity_regularizer=None,
-                 **kwargs):
+                 **kwargs):   #其他参数
         """
          Method for instantiating MMoE layer.
 
@@ -111,6 +111,8 @@ class MMoE(Layer):
         :param input_shape: Keras tensor (future input to layer)
                             or list/tuple of Keras tensors to reference
                             for weight shape computations
+                            
+                            [Batch_size, 输入的embedding大小]
         """
         assert input_shape is not None and len(input_shape) >= 2
 
@@ -165,6 +167,13 @@ class MMoE(Layer):
         :param inputs: Input tensor
         :param kwargs: Additional keyword arguments for the base method
         :return: A tensor
+        
+        inputs 输入 Tensor 的大小为 [B, I],
+        self.expert_kernels 的大小为 [I, E, N],
+        其中 B 为 batch_size，I 为输入 embedding 大小, E 为 Experts 网络的输出大小, N 为 Experts 的个数
+        tf.tensordot(a, b, axes=1) 相当于 tf.tensordot(a, b, axes=[[1],[0]]),
+        因此 expert_outputs 的大小为 [B, E, N] 
+
         """
         gate_outputs = []
         final_outputs = []
